@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+
+  /* Luxury Fintech Palette */
+  --color-background: hsl(0 0% 8%); /* Very dark matte black/gray #141414 */
+  --color-foreground: hsl(0 0% 96%); /* Off white */
+  
+  --color-primary: hsl(46 65% 52%); /* Gold #D4AF37 */
+  --color-primary-foreground: hsl(0 0% 10%); /* Black text on gold */
+  
+  --color-secondary: hsl(30 39% 21%); /* Leather Brown #4B3621 */
+  --color-secondary-foreground: hsl(46 65% 85%); /* Light gold text on brown */
+  
+  --color-muted: hsl(0 0% 15%);
+  --color-muted-foreground: hsl(0 0% 60%);
+  
+  --color-accent: hsl(46 65% 52%); /* Gold accent */
+  --color-accent-foreground: hsl(0 0% 10%);
+  
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  
+  --color-border: hsl(0 0% 18%);
+  --color-ring: hsl(46 65% 52%); /* Gold ring */
+  
+  --color-card: hsl(0 0% 11%); /* Slightly lighter than background #1C1C1C */
+  --color-card-foreground: hsl(0 0% 96%);
+}
+
+:root {
+  --background: 0 0% 8%;
+  --foreground: 0 0% 96%;
+  --primary: 46 65% 52%;
+  --primary-foreground: 0 0% 10%;
+  --secondary: 30 39% 21%;
+  --secondary-foreground: 46 65% 85%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 46 65% 52%;
+  --accent-foreground: 0 0% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 18%;
+  --ring: 46 65% 52%;
+  --card: 0 0% 11%;
+  --card-foreground: 0 0% 96%;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/30 selection:text-primary;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-semibold tracking-tight;
+  }
+
+  /* Custom Scrollbar for a premium feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full border-[2px] border-transparent bg-clip-padding;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+/* Glassmorphism utilities */
+@layer utilities {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-md border border-white/5 shadow-xl shadow-black/50;
+  }
+  
+  .gold-gradient-text {
+    @apply bg-gradient-to-r from-[#F9F295] via-[#E0AA3E] to-[#B8860B] bg-clip-text text-transparent;
+  }
+  
+  .gold-glow {
+    box-shadow: 0 0 20px -5px rgba(212, 175, 55, 0.4);
+  }
+}
