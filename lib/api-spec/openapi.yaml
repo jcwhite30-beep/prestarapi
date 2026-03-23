@@ -1,0 +1,1919 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 1.0.0
+  description: PrestaRapi - Sistema de Gestión de Préstamos
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: agencies
+    description: Agency management
+  - name: users
+    description: User management
+  - name: clients
+    description: Client management
+  - name: loans
+    description: Loan management
+  - name: payments
+    description: Payment management
+  - name: funders
+    description: Funder management
+  - name: holidays
+    description: Holiday management
+  - name: audit
+    description: Audit log
+  - name: trash
+    description: Trash/recycle bin
+  - name: dashboard
+    description: Dashboard stats
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/change-password:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change own password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/recover-request:
+    post:
+      operationId: requestPasswordRecovery
+      tags: [auth]
+      summary: Request password recovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecoveryRequest"
+      responses:
+        "200":
+          description: Recovery request submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/recover-approve/{userId}:
+    post:
+      operationId: approvePasswordRecovery
+      tags: [auth]
+      summary: Approve password recovery and set new password
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveRecoveryRequest"
+      responses:
+        "200":
+          description: Password set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApproveRecoveryResponse"
+
+  /agencies:
+    get:
+      operationId: getAgencies
+      tags: [agencies]
+      summary: List agencies
+      responses:
+        "200":
+          description: List of agencies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agency"
+    post:
+      operationId: createAgency
+      tags: [agencies]
+      summary: Create agency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgencyRequest"
+      responses:
+        "201":
+          description: Agency created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agency"
+
+  /agencies/{id}:
+    get:
+      operationId: getAgency
+      tags: [agencies]
+      summary: Get agency
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Agency
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agency"
+    put:
+      operationId: updateAgency
+      tags: [agencies]
+      summary: Update agency
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgencyRequest"
+      responses:
+        "200":
+          description: Agency updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agency"
+    delete:
+      operationId: deleteAgency
+      tags: [agencies]
+      summary: Soft-delete agency
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: List users
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Soft-delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /users/{id}/toggle-block:
+    post:
+      operationId: toggleUserBlock
+      tags: [users]
+      summary: Block or unblock a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User block status toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/recovery-requests:
+    get:
+      operationId: getRecoveryRequests
+      tags: [users]
+      summary: Get pending password recovery requests
+      responses:
+        "200":
+          description: Recovery requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /clients:
+    get:
+      operationId: getClients
+      tags: [clients]
+      summary: List clients
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: assignedTo
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientRequest"
+      responses:
+        "201":
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get client with account statement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client with full account statement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientWithStatement"
+    put:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientRequest"
+      responses:
+        "200":
+          description: Client updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Soft-delete client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /clients/{id}/reassign:
+    post:
+      operationId: reassignClient
+      tags: [clients]
+      summary: Reassign client to another user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReassignRequest"
+      responses:
+        "200":
+          description: Client reassigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /loans:
+    get:
+      operationId: getLoans
+      tags: [loans]
+      summary: List loans
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: assignedTo
+          in: query
+          schema:
+            type: integer
+        - name: clientId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Loan"
+    post:
+      operationId: createLoan
+      tags: [loans]
+      summary: Request a new loan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLoanRequest"
+      responses:
+        "201":
+          description: Loan created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{id}:
+    get:
+      operationId: getLoan
+      tags: [loans]
+      summary: Get loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Loan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{id}/approve:
+    post:
+      operationId: approveLoan
+      tags: [loans]
+      summary: Approve a loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Loan approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{id}/reject:
+    post:
+      operationId: rejectLoan
+      tags: [loans]
+      summary: Reject a loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Loan rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{id}/disburse:
+    post:
+      operationId: disburseLoan
+      tags: [loans]
+      summary: Disburse a loan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisburseRequest"
+      responses:
+        "200":
+          description: Loan disbursed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{id}/reverse:
+    post:
+      operationId: reverseLoan
+      tags: [loans]
+      summary: Reverse a disbursement (SuperAdmin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Disbursement reversed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /payments:
+    get:
+      operationId: getPayments
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: loanId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: registerPayment
+      tags: [payments]
+      summary: Register a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterPaymentRequest"
+      responses:
+        "201":
+          description: Payment registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}/reconcile:
+    post:
+      operationId: reconcilePayment
+      tags: [payments]
+      summary: Reconcile a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReconcileRequest"
+      responses:
+        "200":
+          description: Payment reconciled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}/reverse:
+    post:
+      operationId: reversePayment
+      tags: [payments]
+      summary: Reverse a reconciled payment (SuperAdmin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment reversed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /funders:
+    get:
+      operationId: getFunders
+      tags: [funders]
+      summary: List funders
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of funders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Funder"
+    post:
+      operationId: createFunder
+      tags: [funders]
+      summary: Create funder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFunderRequest"
+      responses:
+        "201":
+          description: Funder created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Funder"
+
+  /funders/{id}:
+    put:
+      operationId: updateFunder
+      tags: [funders]
+      summary: Update funder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFunderRequest"
+      responses:
+        "200":
+          description: Funder updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Funder"
+    delete:
+      operationId: deleteFunder
+      tags: [funders]
+      summary: Soft-delete funder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /funders/{id}/transaction:
+    post:
+      operationId: funderTransaction
+      tags: [funders]
+      summary: Add capital or withdrawal for funder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FunderTransactionRequest"
+      responses:
+        "200":
+          description: Transaction recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Funder"
+
+  /holidays:
+    get:
+      operationId: getHolidays
+      tags: [holidays]
+      summary: List holidays
+      responses:
+        "200":
+          description: List of holidays
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Holiday"
+    post:
+      operationId: createHoliday
+      tags: [holidays]
+      summary: Create holiday
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHolidayRequest"
+      responses:
+        "201":
+          description: Holiday created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holiday"
+
+  /holidays/{id}:
+    put:
+      operationId: updateHoliday
+      tags: [holidays]
+      summary: Update holiday
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHolidayRequest"
+      responses:
+        "200":
+          description: Holiday updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Holiday"
+    delete:
+      operationId: deleteHoliday
+      tags: [holidays]
+      summary: Delete holiday
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /audit:
+    get:
+      operationId: getAuditLog
+      tags: [audit]
+      summary: Get audit log
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntry"
+
+  /trash:
+    get:
+      operationId: getTrash
+      tags: [trash]
+      summary: Get trash items
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trash items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrashItem"
+
+  /trash/{id}/restore:
+    post:
+      operationId: restoreTrashItem
+      tags: [trash]
+      summary: Restore a trash item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Item restored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      parameters:
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+        - name: userId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /movements:
+    get:
+      operationId: getMovements
+      tags: [payments]
+      summary: List loan movements
+      parameters:
+        - name: loanId
+          in: query
+          schema:
+            type: integer
+        - name: agencyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of movements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Movement"
+
+  /interest/calculate:
+    post:
+      operationId: calculateInterest
+      tags: [loans]
+      summary: Run interest calculation job
+      responses:
+        "200":
+          description: Interest calculated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+        - currentPassword
+        - newPassword
+
+    RecoveryRequest:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+        - username
+
+    ApproveRecoveryRequest:
+      type: object
+      properties:
+        newPassword:
+          type: string
+      required:
+        - newPassword
+
+    ApproveRecoveryResponse:
+      type: object
+      properties:
+        newPassword:
+          type: string
+        userName:
+          type: string
+      required:
+        - newPassword
+        - userName
+
+    Agency:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        city:
+          type: string
+        active:
+          type: boolean
+        currency:
+          type: string
+        baseRate:
+          type: number
+          description: Default interest rate (e.g. 0.10 = 10%)
+        graceDaysDisbursement:
+          type: integer
+          description: Grace days after disbursement before interest accrues
+        graceDaysPayment:
+          type: integer
+          description: Grace days after payment before new interest accrues
+        paymentMethods:
+          type: array
+          items:
+            type: string
+        banks:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankConfig"
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - city
+        - active
+        - currency
+        - baseRate
+        - graceDaysDisbursement
+        - graceDaysPayment
+        - paymentMethods
+        - banks
+        - createdAt
+
+    BankConfig:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+      required:
+        - name
+        - url
+
+    CreateAgencyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        city:
+          type: string
+        currency:
+          type: string
+        baseRate:
+          type: number
+        graceDaysDisbursement:
+          type: integer
+        graceDaysPayment:
+          type: integer
+        paymentMethods:
+          type: array
+          items:
+            type: string
+        banks:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankConfig"
+      required:
+        - name
+        - city
+        - currency
+        - baseRate
+        - graceDaysDisbursement
+        - graceDaysPayment
+        - paymentMethods
+        - banks
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [superadmin, admin, manager, promoter]
+        agencyIds:
+          type: array
+          items:
+            type: integer
+        blocked:
+          type: boolean
+        avatar:
+          type: string
+        needsPasswordRecovery:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - username
+        - role
+        - agencyIds
+        - blocked
+        - needsPasswordRecovery
+        - createdAt
+
+    CreateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, promoter]
+        agencyIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - name
+        - username
+        - password
+        - role
+        - agencyIds
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        agencyIds:
+          type: array
+          items:
+            type: integer
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        phone2:
+          type: string
+        agencyId:
+          type: integer
+        agencyName:
+          type: string
+        assignedToId:
+          type: integer
+        assignedToName:
+          type: string
+        assignedToRole:
+          type: string
+        active:
+          type: boolean
+        capitalBalance:
+          type: number
+        currentInterest:
+          type: number
+        overdueInterest:
+          type: number
+        overdueQuincenas:
+          type: integer
+        createdAt:
+          type: string
+          format: date
+      required:
+        - id
+        - name
+        - agencyId
+        - assignedToId
+        - active
+        - capitalBalance
+        - currentInterest
+        - overdueInterest
+        - overdueQuincenas
+        - createdAt
+
+    ClientWithStatement:
+      allOf:
+        - $ref: "#/components/schemas/Client"
+        - type: object
+          properties:
+            loans:
+              type: array
+              items:
+                $ref: "#/components/schemas/Loan"
+            movements:
+              type: array
+              items:
+                $ref: "#/components/schemas/Movement"
+
+    CreateClientRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        phone2:
+          type: string
+        agencyId:
+          type: integer
+        assignedToId:
+          type: integer
+      required:
+        - name
+        - agencyId
+        - assignedToId
+
+    ReassignRequest:
+      type: object
+      properties:
+        assignedToId:
+          type: integer
+      required:
+        - assignedToId
+
+    Loan:
+      type: object
+      properties:
+        id:
+          type: integer
+        clientId:
+          type: integer
+        clientName:
+          type: string
+        agencyId:
+          type: integer
+        agencyName:
+          type: string
+        promoterId:
+          type: integer
+        promoterName:
+          type: string
+        originalCapital:
+          type: number
+        currentCapital:
+          type: number
+        rate:
+          type: number
+        periodicity:
+          type: string
+          enum: [daily, weekly, biweekly, monthly]
+        status:
+          type: string
+          enum: [pending_approval, approved, pending_disbursement, active, rejected, settled]
+        overdueInterest:
+          type: number
+        currentInterest:
+          type: number
+        disbursementDate:
+          type: string
+          format: date
+        nextCutDate:
+          type: string
+          format: date
+        disbursementMethod:
+          type: string
+        disbursementProof:
+          type: string
+        inDefault:
+          type: boolean
+        rejectReason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - clientId
+        - agencyId
+        - originalCapital
+        - currentCapital
+        - rate
+        - periodicity
+        - status
+        - overdueInterest
+        - currentInterest
+        - inDefault
+        - createdAt
+
+    CreateLoanRequest:
+      type: object
+      properties:
+        clientId:
+          type: integer
+        agencyId:
+          type: integer
+        amount:
+          type: number
+        disbursementMethod:
+          type: string
+        periodicity:
+          type: string
+          enum: [daily, weekly, biweekly, monthly]
+        notes:
+          type: string
+      required:
+        - clientId
+        - agencyId
+        - amount
+        - disbursementMethod
+        - periodicity
+
+    DisburseRequest:
+      type: object
+      properties:
+        rate:
+          type: number
+        disbursementMethod:
+          type: string
+        proof:
+          type: string
+          description: Base64 encoded image or URL
+        periodicity:
+          type: string
+          enum: [daily, weekly, biweekly, monthly]
+      required:
+        - rate
+        - disbursementMethod
+        - periodicity
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        loanId:
+          type: integer
+        clientName:
+          type: string
+        agencyId:
+          type: integer
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending_reconciliation, reconciled, reversed]
+        registeredById:
+          type: integer
+        registeredByName:
+          type: string
+        reconciledById:
+          type: integer
+        reconciledByName:
+          type: string
+        image:
+          type: string
+        date:
+          type: string
+          format: date
+        appliedOverdue:
+          type: number
+        appliedCurrent:
+          type: number
+        appliedCapital:
+          type: number
+        forgivenInterest:
+          type: number
+        forgivenCapital:
+          type: number
+      required:
+        - id
+        - loanId
+        - agencyId
+        - amount
+        - status
+        - registeredById
+        - date
+
+    RegisterPaymentRequest:
+      type: object
+      properties:
+        loanId:
+          type: integer
+        amount:
+          type: number
+        image:
+          type: string
+          description: Base64 encoded image or URL
+        notes:
+          type: string
+      required:
+        - loanId
+        - amount
+
+    ReconcileRequest:
+      type: object
+      properties:
+        forgivenInterest:
+          type: number
+          description: Amount of interest to forgive
+        forgivenCapital:
+          type: number
+          description: Amount of capital to forgive
+      required: []
+
+    Funder:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        capital:
+          type: number
+        rateToPayPercent:
+          type: number
+        agencyId:
+          type: integer
+        agencyName:
+          type: string
+        periodicity:
+          type: string
+          enum: [daily, weekly, biweekly, monthly]
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - capital
+        - rateToPayPercent
+        - agencyId
+        - periodicity
+        - active
+        - createdAt
+
+    CreateFunderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        capital:
+          type: number
+        rateToPayPercent:
+          type: number
+        agencyId:
+          type: integer
+        periodicity:
+          type: string
+          enum: [daily, weekly, biweekly, monthly]
+      required:
+        - name
+        - capital
+        - rateToPayPercent
+        - agencyId
+        - periodicity
+
+    FunderTransactionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [increase, withdrawal]
+        amount:
+          type: number
+        note:
+          type: string
+        proof:
+          type: string
+      required:
+        - type
+        - amount
+
+    Holiday:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        amortization:
+          type: string
+          enum: [none, advance, delay]
+      required:
+        - id
+        - date
+        - description
+        - amortization
+
+    CreateHolidayRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        amortization:
+          type: string
+          enum: [none, advance, delay]
+      required:
+        - date
+        - description
+        - amortization
+
+    AuditEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: string
+        userRole:
+          type: string
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: integer
+        agencyId:
+          type: integer
+        agencyName:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        ip:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - action
+        - createdAt
+
+    TrashItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        entityId:
+          type: integer
+        agencyId:
+          type: integer
+        agencyName:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        deletedById:
+          type: integer
+        deletedByName:
+          type: string
+        deletedAt:
+          type: string
+          format: date-time
+        restoredAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - type
+        - entityId
+        - deletedAt
+
+    DashboardStats:
+      type: object
+      properties:
+        totalCapitalOnStreet:
+          type: number
+        totalCurrentInterest:
+          type: number
+        totalOverdueInterest:
+          type: number
+        totalActiveClients:
+          type: integer
+        totalActiveLoans:
+          type: integer
+        totalLoansInDefault:
+          type: integer
+        upcomingCuts:
+          type: array
+          items:
+            $ref: "#/components/schemas/UpcomingCut"
+        portfolioByUser:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserPortfolio"
+        interestCollected:
+          type: number
+          description: Total interest collected (reconciled payments)
+        funders:
+          $ref: "#/components/schemas/FundersBalance"
+      required:
+        - totalCapitalOnStreet
+        - totalCurrentInterest
+        - totalOverdueInterest
+        - totalActiveClients
+        - totalActiveLoans
+        - totalLoansInDefault
+        - upcomingCuts
+        - portfolioByUser
+        - interestCollected
+
+    UpcomingCut:
+      type: object
+      properties:
+        loanId:
+          type: integer
+        clientName:
+          type: string
+        agencyName:
+          type: string
+        cutDate:
+          type: string
+          format: date
+        capital:
+          type: number
+        interest:
+          type: number
+      required:
+        - loanId
+        - clientName
+        - cutDate
+        - capital
+        - interest
+
+    UserPortfolio:
+      type: object
+      properties:
+        userId:
+          type: integer
+        userName:
+          type: string
+        role:
+          type: string
+        totalCapital:
+          type: number
+        totalInterest:
+          type: number
+        totalClients:
+          type: integer
+        totalLoans:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserPortfolio"
+      required:
+        - userId
+        - userName
+        - role
+        - totalCapital
+        - totalInterest
+        - totalClients
+        - totalLoans
+
+    FundersBalance:
+      type: object
+      properties:
+        prestarapiCapital:
+          type: number
+        externalFundersCapital:
+          type: number
+        totalFund:
+          type: number
+        capitalOnStreet:
+          type: number
+        availableFlow:
+          type: number
+        totalInterestPaidToFunders:
+          type: number
+        nextCutInterestToFunders:
+          type: number
+      required:
+        - prestarapiCapital
+        - externalFundersCapital
+        - totalFund
+        - capitalOnStreet
+        - availableFlow
+        - totalInterestPaidToFunders
+        - nextCutInterestToFunders
+
+    Movement:
+      type: object
+      properties:
+        id:
+          type: integer
+        loanId:
+          type: integer
+        type:
+          type: string
+          enum: [disbursement, interest_accrual, payment_overdue_interest, payment_current_interest, payment_capital, forgiveness, reversal]
+        amount:
+          type: number
+        concept:
+          type: string
+        date:
+          type: string
+          format: date
+        userId:
+          type: integer
+        userName:
+          type: string
+        reversed:
+          type: boolean
+        image:
+          type: string
+      required:
+        - id
+        - loanId
+        - type
+        - amount
+        - concept
+        - date
+        - reversed

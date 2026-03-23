@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm install -g pnpm@latest && pnpm install && pnpm --filter @workspace/prestarapi run build:vercel",
+  "outputDirectory": "artifacts/prestarapi/dist",
+  "framework": null,
+  "installCommand": "echo 'install handled in buildCommand'",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

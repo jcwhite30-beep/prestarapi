@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "JJLXuMUtxFfTriZK4RI_T"
+uri = "file://prestarapi-project.tar.gz"
+type = "unspecified"
+title = "PrestaRapi — Código fuente completo"
